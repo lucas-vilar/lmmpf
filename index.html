@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMMPF — Laboratory of Molecular Modeling and Drug Design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* ─── TOKENS ─────────────────────────────────────── */
+        :root {
+            --bg:            #d8dce6;
+            --surface:       #e4e7ef;
+            --card:          #ffffff;
+            --header-bg:     #0f1729;
+            --accent:        #2463a4;
+            --accent-soft:   #bdd4ee;
+            --accent-dark:   #1a4a85;
+            --amber:         #c47a38;
+            --text:          #181d2b;
+            --muted:         #51607a;
+            --border:        #c3c8d6;
+            --shadow-sm:     0 2px 8px rgba(15,23,41,.07);
+            --shadow-md:     0 5px 20px rgba(15,23,41,.11);
+            --shadow-lg:     0 10px 32px rgba(15,23,41,.16);
+            --radius:        10px;
+            --nav-h:         64px;
+            --container:     1100px;
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Source Sans 3', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        img { max-width:100%; display:block; }
+        a { color:inherit; }
+
+        /* ─── HEADER / NAV ───────────────────────────────── */
+        #site-header {
+            position: fixed;
+            inset: 0 0 auto 0;
+            height: var(--nav-h);
+            background: var(--header-bg);
+            z-index: 900;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 20px rgba(0,0,0,.40);
+        }
+        .nav-inner {
+            max-width: var(--container);
+            margin: 0 auto;
+            width: 100%;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .site-logo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            cursor: pointer;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        .site-logo em { font-style:normal; color: var(--accent-soft); }
+        .nav-links { list-style:none; display:flex; gap:.15rem; }
+        .nav-links a {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .75rem;
+            font-weight: 600;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,.6);
+            text-decoration: none;
+            padding: .45rem 1rem;
+            border-radius: 5px;
+            transition: color .15s, background .15s;
+            display: block;
+            cursor: pointer;
+        }
+        .nav-links a:hover { color: #fff; background: rgba(255,255,255,.08); }
+        .nav-links a.active { color: #fff; background: var(--accent); }
+
+        /* ─── PAGE SWITCHING ─────────────────────────────── */
+        .page {
+            display: none;
+            padding-top: var(--nav-h);
+            min-height: 100vh;
+            animation: fadeUp .22s ease;
+        }
+        .page.active { display: block; }
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(8px); }
+            to   { opacity:1; transform:none; }
+        }
+
+        /* ─── SHARED UTILS ───────────────────────────────── */
+        .container { max-width:var(--container); margin:0 auto; padding:0 2rem; }
+        .sec { padding: 4rem 0; }
+        .sec-alt { background: var(--surface); }
+
+        .section-heading {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 1.75rem;
+        }
+
+        .chip {
+            display: inline-block;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .67rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            background: var(--accent-soft);
+            color: var(--accent-dark);
+            padding: .2rem .65rem;
+            border-radius: 4px;
+        }
+
+        .page-banner {
+            background: var(--header-bg);
+            padding: 3.5rem 2rem 3rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .page-banner::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse at 70% 50%, rgba(36,99,164,.15) 0%, transparent 65%);
+            pointer-events: none;
+        }
+        .page-banner h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: .04em;
+            position: relative;
+        }
+        .page-banner p {
+            margin-top: .45rem;
+            color: rgba(255,255,255,.42);
+            font-size: .82rem;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            position: relative;
+        }
+        .banner-rule {
+            width: 44px; height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            margin: 1rem auto 0;
+            position: relative;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           HOME
+        ═══════════════════════════════════════════════════ */
+        .hero {
+            background: var(--header-bg);
+            position: relative;
+            overflow: hidden;
+            padding: 5.5rem 2rem 5rem;
+            text-align: center;
+        }
+        /* ── Signature: free energy landscape contour lines ── */
+        .hero-contours {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .hero-eyebrow {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--accent-soft);
+            margin-bottom: 1.2rem;
+            position: relative;
+        }
+        .hero h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(1.55rem, 3.5vw, 2.6rem);
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.22;
+            max-width: 700px;
+            margin: 0 auto;
+            letter-spacing: .01em;
+            position: relative;
+        }
+        .hero-rule {
+            width: 50px; height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+            margin: 1.6rem auto 2.8rem;
+            position: relative;
+        }
+        .hero-photo { max-width: 880px; margin: 0 auto; position:relative; }
+        .photo-placeholder {
+            aspect-ratio: 16 / 6.2;
+            background: rgba(255,255,255,.035);
+            border: 1.5px dashed rgba(255,255,255,.16);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .6rem;
+            color: rgba(255,255,255,.28);
+            font-size: .82rem;
+            letter-spacing: .04em;
+        }
+        .photo-placeholder svg { width:34px; height:34px; fill:rgba(255,255,255,.22); }
+
+        /* About */
+        .about-grid {
+            display: block;
+        }
+        .about-text h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 1.1rem;
+            line-height: 1.28;
+        }
+        .about-text h2 span { color: var(--accent); }
+        .about-text p { font-size: .97rem; color: var(--muted); line-height: 1.82; margin-bottom: .9rem; text-align: justify; }
+        .about-text p:last-child { margin-bottom: 0; }
+
+        .stat-grid { display:grid; grid-template-columns:1fr 1fr; gap:.85rem; }
+        .stat-box {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.6rem 1.25rem;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            border-bottom: 3px solid var(--accent);
+            transition: box-shadow .2s, transform .2s;
+        }
+        .stat-box:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .stat-box .num {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 2.15rem;
+            font-weight: 700;
+            color: var(--amber);
+            line-height: 1;
+        }
+        .stat-box .lbl {
+            font-size: .71rem;
+            font-weight: 600;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: .35rem;
+        }
+
+        /* ═══════════════════════════════════════════════════
+           RESEARCH
+        ═══════════════════════════════════════════════════ */
+        .research-block {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: .82fr 1fr;
+            transition: box-shadow .2s;
+        }
+        .research-block:hover { box-shadow: var(--shadow-lg); }
+        .research-block.flip { grid-template-columns: 1fr .82fr; }
+        .research-block.flip .rb-img   { order:2; }
+        .research-block.flip .rb-body  { order:1; }
+
+        .rb-img {
+            background: var(--surface);
+            border-right: 1.5px solid var(--border);
+            min-height: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .6rem;
+            color: var(--muted);
+            font-size: .8rem;
+            text-align: center;
+            padding: 1.5rem;
+        }
+        .research-block.flip .rb-img { border-right:none; border-left:1.5px solid var(--border); }
+        .rb-img svg { width:36px; height:36px; fill:var(--border); }
+        .rb-img em { font-style:normal; font-size:.72rem; color:var(--border); }
+        .rb-img img { width:100%; height:100%; object-fit:cover; }
+
+        .rb-body {
+            padding: 2.4rem 2.2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: .75rem;
+        }
+        .rb-body h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.18rem;
+            font-weight: 700;
+            color: var(--text);
+            line-height: 1.3;
+        }
+        .rb-body p { font-size: .95rem; color: var(--muted); line-height: 1.82; }
+
+        /* Publications */
+        .pub-list { display:flex; flex-direction:column; gap:.6rem; }
+        .pub-item {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.15rem 1.5rem 1.15rem 1.2rem;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--accent);
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .pub-item:hover { border-left-color: var(--amber); box-shadow: var(--shadow-md); }
+        .pub-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .9rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: .28rem;
+            line-height: 1.4;
+        }
+        .pub-authors { font-size: .82rem; color: var(--muted); margin-bottom: .22rem; }
+        .pub-journal { font-size: .82rem; color: var(--accent); font-style: italic; }
+        .pub-doi { margin-top:.22rem; }
+        .pub-doi a { font-size:.77rem; color:var(--muted); text-decoration:none; transition:color .15s; }
+        .pub-doi a:hover { color:var(--accent); text-decoration:underline; }
+
+        /* ═══════════════════════════════════════════════════
+           MEMBERS
+        ═══════════════════════════════════════════════════ */
+        .members-layout {
+            display: grid;
+            grid-template-columns: 1fr 258px;
+            gap: 2rem;
+            align-items: start;
+        }
+        .member-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.6rem;
+            display: flex;
+            gap: 1.4rem;
+            align-items: flex-start;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: .85rem;
+            transition: box-shadow .2s;
+        }
+        .member-card:hover { box-shadow: var(--shadow-md); }
+        .member-avatar {
+            width: 130px; height: 175px;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            flex-shrink: 0;
+            overflow: hidden;
+            display: flex; align-items:center; justify-content:center;
+        }
+        .member-avatar svg { width:44px; height:44px; fill:var(--border); }
+        .member-avatar img { width:100%; height:100%; object-fit:cover; }
+        .member-info { flex:1; min-width:0; }
+        .member-role {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .66rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: .18rem;
+        }
+        .member-name {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: .48rem;
+        }
+        .member-bio { font-size:.88rem; color:var(--muted); line-height:1.72; margin-bottom:.7rem; text-align: justify; }
+        .member-links { display:flex; gap:.4rem; flex-wrap:wrap; }
+        .btn-link {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .05em;
+            padding: .27rem .75rem;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background .15s, color .15s;
+        }
+        .btn-scholar  { background:#e7f0fe; color:#1558c0; }
+        .btn-scholar:hover  { background:#1558c0; color:#fff; }
+        .btn-linkedin { background:#e0f0f8; color:#0a66c2; }
+        .btn-linkedin:hover { background:#0a66c2; color:#fff; }
+        .btn-cv { background:var(--surface); color:var(--muted); }
+        .btn-cv:hover { background:var(--muted); color:#fff; }
+
+        /* Alumni panel */
+        .alumni-panel {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: calc(var(--nav-h) + 1.25rem);
+        }
+        .panel-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--text);
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 1rem;
+        }
+        .alumni-entry { padding:.62rem 0; border-bottom:1px solid var(--border); }
+        .alumni-entry:last-child { border-bottom:none; }
+        .alumni-name { font-family:'Space Grotesk',sans-serif; font-size:.87rem; font-weight:600; color:var(--text); }
+        .alumni-detail { font-size:.76rem; color:var(--muted); margin-top:.1rem; line-height:1.4; }
+
+
+        /* ═══════════════════════════════════════════════════
+           CONTACT
+        ═══════════════════════════════════════════════════ */
+        .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+        .contact-card {
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+        .contact-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent-soft);
+            margin-bottom: 1.4rem;
+        }
+        .contact-row {
+            display: flex;
+            gap: .9rem;
+            align-items: flex-start;
+            margin-bottom: 1.1rem;
+        }
+        .contact-row:last-child { margin-bottom:0; }
+        .cicon {
+            width: 34px; height: 34px;
+            border-radius: 7px;
+            background: var(--accent-soft);
+            display: flex; align-items:center; justify-content:center;
+            flex-shrink: 0;
+        }
+        .cicon svg { width:16px; height:16px; fill:var(--accent); }
+        .ctext { font-size:.9rem; color:var(--muted); line-height:1.6; }
+        .ctext strong { display:block; font-size:.77rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--text); margin-bottom:.1rem; }
+        .ctext a { color:var(--accent); text-decoration:none; }
+        .ctext a:hover { text-decoration:underline; }
+
+        .positions-card {
+            grid-column: 1 / -1;
+            background: var(--card);
+            border-radius: var(--radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border-top: 3px solid var(--accent);
+        }
+        .positions-card h3 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .8rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 1rem;
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .73rem;
+            font-weight: 700;
+            padding: .3rem .9rem;
+            border-radius: 20px;
+            margin-right: .5rem;
+            margin-bottom: 1rem;
+            letter-spacing: .04em;
+        }
+        .badge::before { content:'●'; font-size:.55rem; }
+        .badge-open   { background:#ddf0e6; color:#1d7a42; }
+        .badge-closed { background:#fde8e8; color:#b91c1c; }
+        .positions-body { font-size:.93rem; color:var(--muted); line-height:1.82; }
+        .positions-body strong { color:var(--text); }
+
+        /* ═══════════════════════════════════════════════════
+           GALLERY
+        ═══════════════════════════════════════════════════ */
+        .gallery-album { margin-bottom: 3.5rem; }
+        .gallery-album:last-child { margin-bottom: 0; }
+
+        .gallery-album-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            padding-bottom: .6rem;
+            border-bottom: 2px solid var(--accent);
+            margin-bottom: 1.25rem;
+        }
+        .gallery-album-header h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: .82rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--accent);
+        }
+        .gallery-album-header .album-hint {
+            font-size: .75rem;
+            color: var(--muted);
+        }
+
+        /* Masonry column layout */
+        .gallery-masonry {
+            columns: 3;
+            column-gap: 1rem;
+        }
+        .gallery-item, .gallery-ph {
+            break-inside: avoid;
+            margin-bottom: 1rem;
+            border-radius: var(--radius);
+            overflow: hidden;
+            display: block;
+        }
+
+        /* Real photo item */
+        .gallery-item {
+            position: relative;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            background: var(--surface);
+            transition: box-shadow .2s, transform .2s;
+        }
+        .gallery-item:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+        .gallery-item img {
+            width: 100%;
+            display: block;
+            transition: transform .4s ease;
+        }
+        .gallery-item:hover img { transform: scale(1.04); }
+        .gallery-item figcaption {
+            position: absolute;
+            inset: auto 0 0;
+            background: linear-gradient(to top, rgba(10,15,30,.9) 0%, transparent 100%);
+            padding: 2rem 1rem .85rem;
+            opacity: 0;
+            transition: opacity .25s;
+            font-size: .82rem;
+            color: #fff;
+            line-height: 1.4;
+        }
+        .gallery-item:hover figcaption { opacity: 1; }
+
+        /* Placeholder item */
+        .gallery-ph {
+            background: var(--surface);
+            border: 1.5px dashed var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            color: var(--border);
+            font-size: .77rem;
+            text-align: center;
+            padding: 2rem 1rem;
+            min-height: 160px;
+        }
+        .gallery-ph svg { width:28px; height:28px; fill:var(--border); }
+
+        /* Lightbox */
+        .lightbox {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5,10,20,.95);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            padding: 2rem;
+        }
+        .lightbox.open { display: flex; }
+        .lb-close {
+            position: absolute;
+            top: 1.25rem; right: 1.25rem;
+            background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.2);
+            color: #fff;
+            font-size: 1.3rem;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex; align-items:center; justify-content:center;
+            transition: background .15s;
+            line-height: 1;
+        }
+        .lb-close:hover { background: rgba(255,255,255,.2); }
+        .lb-img {
+            max-width: 88vw;
+            max-height: 80vh;
+            border-radius: 6px;
+            object-fit: contain;
+            box-shadow: 0 24px 64px rgba(0,0,0,.55);
+        }
+        .lb-caption {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: .88rem;
+            color: rgba(255,255,255,.6);
+            text-align: center;
+            max-width: 580px;
+            line-height: 1.5;
+        }
+
+        @media (max-width:860px) { .gallery-masonry { columns:2; } }
+        @media (max-width:500px) { .gallery-masonry { columns:1; } }
+
+        /* ─── FOOTER ─────────────────────────────────────── */
+        #site-footer {
+            background: var(--header-bg);
+            color: rgba(255,255,255,.32);
+            text-align: center;
+            padding: 1.65rem;
+            font-size: .77rem;
+            letter-spacing: .02em;
+        }
+        #site-footer a { color: var(--accent-soft); text-decoration:none; }
+        #site-footer a:hover { text-decoration:underline; }
+
+        /* ─── RESPONSIVE ─────────────────────────────────── */
+        @media (max-width:900px) {
+            .about-grid        { grid-template-columns:1fr; }
+            .members-layout    { grid-template-columns:1fr; }
+            .members-layout .alumni-panel { position:static; }
+            .news-grid         { grid-template-columns:1fr; }
+            .contact-grid      { grid-template-columns:1fr; }
+            .positions-card    { grid-column:1; }
+        }
+        @media (max-width:720px) {
+            .research-block,
+            .research-block.flip { grid-template-columns:1fr; }
+            .research-block .rb-img,
+            .research-block.flip .rb-img { order:0; min-height:180px; border-right:none; border-left:none; border-bottom:1.5px solid var(--border); }
+            .research-block .rb-body,
+            .research-block.flip .rb-body { order:1; }
+            .hero h1 { font-size:1.5rem; }
+            .nav-links a { padding:.4rem .6rem; font-size:.68rem; }
+        }
+        @media (max-width:480px) {
+            .nav-inner { gap:.5rem; }
+            .site-logo { font-size:.88rem; }
+        }
+
+        /* ─── PRINT ──────────────────────────────────────── */
+        @media print {
+            #site-header, .page:not(.active) { display:none!important; }
+            .page.active { padding-top:0; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════ -->
+<header id="site-header">
+    <div class="nav-inner">
+        <div class="site-logo" id="logo-home">LMM<em>PF</em></div>
+        <nav aria-label="Main navigation">
+            <ul class="nav-links">
+                <li><a data-page="home"     class="active">Home</a></li>
+                <li><a data-page="research"           >Research</a></li>
+                <li><a data-page="members"            >Members</a></li>
+                <li><a data-page="gallery"            >Gallery</a></li>
+                <li><a data-page="contact"            >Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════
+     HOME
+════════════════════════════════════════════════════ -->
+<section id="page-home" class="page active">
+
+    <div class="hero">
+        <!-- Signature element: free energy landscape contour lines -->
+        <svg class="hero-contours" viewBox="0 0 1200 460" preserveAspectRatio="xMidYMid slice"
+             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <g fill="none" stroke="white" stroke-width="1">
+                <!-- Outer contours — broad energy landscape -->
+                <path d="M-80,430 Q160,395 300,430 Q445,468 575,390 Q665,330 775,370 Q895,410 1015,360 Q1110,320 1300,375" opacity=".04"/>
+                <path d="M-80,390 Q145,350 285,390 Q428,432 560,348 Q650,283 762,325 Q882,365 1000,312 Q1098,270 1300,330" opacity=".05"/>
+                <path d="M-80,345 Q128,298 270,345 Q410,394 542,302 Q636,232 748,276 Q868,318 985,263 Q1084,220 1300,280" opacity=".06"/>
+                <path d="M-80,296 Q110,244 252,296 Q390,348 522,250 Q620,175 734,223 Q855,268 970,210 Q1068,165 1300,228" opacity=".07"/>
+                <path d="M-80,243 Q92,186 233,243 Q370,298 500,192 Q602,112 718,165 Q840,215 954,152 Q1055,108 1300,173" opacity=".07"/>
+                <path d="M-80,186 Q72,124 211,182 Q348,242 476,128 Q580,44  702,104 Q826,158 938,91  Q1042,46  1300,115" opacity=".05"/>
+                <path d="M-80,125 Q52,60  188,118 Q326,184 452,60  Q558,-30 688,40  Q812,98  921,28  Q1028,-18 1300,55 " opacity=".04"/>
+                <!-- Saddle-point ridge lines — hint at transition states -->
+                <path d="M565,0 Q560,100 555,195 Q552,280 560,395 Q563,430 566,460" opacity=".035" stroke-dasharray="4 6"/>
+                <path d="M768,20 Q763,125 758,228 Q755,315 763,420 Q766,445 768,460" opacity=".025" stroke-dasharray="4 6"/>
+            </g>
+        </svg>
+
+        <div style="position:relative; z-index:1;">
+            <p class="hero-eyebrow">Federal University of Minas Gerais — Department of biochemistry and immunology</p>
+            <h1>Laboratório de Modelagem Molecular<br>e Planejamento de Fármacos</h1>
+            <div class="hero-rule"></div>
+            <div class="hero-photo">
+                <div class="photo-placeholder">
+                    <img src="grupo.jpeg" alt="Lab group photo">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="sec sec-alt">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-text">
+                    <h2>About Our <span>Laboratory</span></h2>
+                    <p>We are interested in combining experimental and computational approaches for drug design, especially targeting neglected and emerging diseases. Most projects in our group involve structure-based drug design to discover and optimize bioactive compounds. Also, considering potential applications for medicinal chemistry, we are interested in characterizing new protein targets or druggable pockets, and in developing new tools. Our main research topics are:</p>
+                    <p><b>Structure-based drug design (mostly) for neglected and emerging diseases</b></p>
+                    <p>Aware of the need to develop better drugs to treat neglected and emerging diseases, and considering how much rational drug design can aid in this process, we employ techniques such as experimental screening, virtual screening, molecular docking, and molecular dynamics simulations to discover and optimize potential drug candidates. We have been focused mostly on proteases such as cruzain1–3, a target for Chagas disease, the NS2B/NS3 Zika virus protease, and SARS-CoV2 Mpro (a target for COVID-19)4,5. Ongoing research also includes parasite proteasomes as targets for malaria and Chagas disease, SRPKs as targets for cancer treatment and dihydrofolate reductase for tuberculosis treatment. Among varied strategies to discover inhibitors for these targets, we are currently very interested in exploring ultra large chemical spaces through virtual screening, always followed by experimental validation6.</p> 
+
+                    <p>While most of our projects focus on small molecules, we also study protein-protein interactions, aiming to investigate the biological role of specific proteins and the key elements for their interaction, understand selectivity, and design bioactive peptides.</p>
+
+                    <p><b>Computational and biochemical characterization of therapeutic targets</b></p>
+                    <p>Given the need to further validate potential therapeutic targets, we have contributed to the characterization of protease targets. In the case of Zika virus protease, we have characterized a new allosteric site experimentally and through MD simulations7. Using constant pH simulations, we also studied how the protonation states of active site residues vary depending on the pH and in the presence of a ligand4, to guide structure-based drug design studies. </p>
+
+                    <p>While there has been much effort to develop cruzain inhibitors as therapeutics for Chagas disease, there are still many open questions concerning the multigenic family of cruzipains. We recently determined the genomic organization of this family in three Trypanosoma cruzi, and divided their members into four cruzipain subtypes. Cruzain is the recombinant form of cruzipain 1, the only subtype targeted in medicinal chemistry efforts. However, we detected the expression of the several cruzipain subtypes throughout the T. cruzi life cycle and observed important differences in the active site residues among the four subtypes8,9. Our current efforts aim to understand the biological roles of each cruzipain subtype and their relevance for drug design.</p>
+                    
+                    <p><b>References:</b></p>
+
+                    <p>1.        Barbosa da Silva, E. et al. Structure-Based Optimization of Quinazolines as Cruzain and Tbr CATL Inhibitors. J Med Chem 64, 13054–13071 (2021).</p>
+                    <p>2.        Santos, V. C. et al. Structure-based discovery of novel cruzain inhibitors with distinct trypanocidal activity profiles. Eur J Med Chem 257, 115498 (2023).</p>
+                    <p>3.        do Valle Moreira, T. et al. Screening the Pathogen Box to Discover and Characterize New Cruzain and TbrCatL Inhibitors. Pathogens 12, 251 (2023).</p>
+                    <p>4.        Santos, L. H. et al. Structure-Based Identification of Naphthoquinones and Derivatives as Novel Inhibitors of Main Protease M pro and Papain-like Protease PL pro of SARS-CoV-2. J Chem Inf Model 62, 6553–6573 (2022).</p>
+                    <p>5.        Maltarollo, V. G. et al. Structure-Based Discovery of Thiosemicarbazones As SARS-CoV-2 Main Protease Inhibitors. Future Med Chem 15, 959–985 (2023).</p>
+                    <p>6.        Corrêa Veríssimo, G., Salgado Ferreira, R. & Gonçalves Maltarollo, V. Ultra‐Large Virtual Screening: Definition, Recent Advances, and Challenges in Drug Design. Mol Inform 44, (2025).</p>
+                    <p>7.        Santos, N. P. et al. Characterization of an Allosteric Pocket in Zika Virus NS2B-NS3 Protease. J Chem Inf Model 62, 945–957 (2022).</p>
+                    <p>8.        Santos, V. C. et al. The gene repertoire of the main cysteine protease of Trypanosoma cruzi, cruzipain, reveals four sub-types with distinct active sites. Sci Rep 11, 18231 (2021).</p>
+                    <p>9.        Santos, L. H. S. et al. Unraveling Common Patterns and Differences among Cruzipains through Molecular Dynamics Simulations and Structural Analyses. ACS Omega https://doi.org/10.1021/acsomega.5c01876 (2025) doi:10.1021/acsomega.5c01876.</p>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     RESEARCH
+════════════════════════════════════════════════════ -->
+<section id="page-research" class="page">
+
+    <div class="page-banner">
+        <h1>Research</h1>
+        <p>Our areas of investigation</p>
+        <div class="banner-rule"></div>
+    </div>
+
+    <div class="container sec">
+
+        <!-- Block 1 -->
+        <div class="research-block">
+            <div class="rb-img">
+                <!-- Replace with: <img src="research1.png" alt="..."> -->
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                <span>Graphic abstract or key figure</span>
+                <em>replace with &lt;img&gt;</em>
+            </div>
+            <div class="rb-body">
+                <span class="chip">Virtual Screening</span>
+                <h3>Structure-Based Virtual Screening Pipelines</h3>
+                <p>We develop and apply structure-based virtual screening workflows to prospect large molecular libraries against pharmacologically relevant targets. Our pipelines integrate molecular docking engines (GNINA, AutoDock Vina) with machine learning enrichment strategies — including deep learning approaches such as DeepDocking — enabling systematic exploration of multi-million compound libraries with high computational efficiency on HPC environments.</p>
+            </div>
+        </div>
+
+        <!-- Block 2 (flipped) -->
+        <div class="research-block flip">
+            <div class="rb-img">
+                <!-- Replace with: <img src="research2.png" alt="..."> -->
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                <span>Graphic abstract or key figure</span>
+                <em>replace with &lt;img&gt;</em>
+            </div>
+            <div class="rb-body">
+                <span class="chip">Kinase Biology</span>
+                <h3>Kinase Allostery &amp; Selective Inhibitor Design</h3>
+                <p>We investigate allosteric and cryptic binding sites in kinases — with a particular focus on the SRPK family — characterizing conformational dynamics, DFG-in/out equilibria, and non-catalytic regions such as the docking groove and spacer insert domain. This work provides structural rationale for selective inhibitors that go beyond the ATP-competitive site and modulate kinase function through alternative mechanisms.</p>
+            </div>
+        </div>
+
+        <!-- Block 3 -->
+        <div class="research-block">
+            <div class="rb-img">
+                <!-- Replace with: <img src="research3.png" alt="..."> -->
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                <span>Graphic abstract or key figure</span>
+                <em>replace with &lt;img&gt;</em>
+            </div>
+            <div class="rb-body">
+                <span class="chip">Molecular Dynamics</span>
+                <h3>Molecular Dynamics &amp; Free Energy Methods</h3>
+                <p>We apply molecular dynamics simulations and free energy calculation methods (MM-PBSA, FEP) to characterize protein–ligand binding thermodynamics, conformational ensembles, and transition pathways between distinct states. These approaches are central to uncovering transiently accessible binding pockets, rationalizing observed selectivity profiles, and prioritizing hits from virtual screening campaigns for further optimization.</p>
+            </div>
+        </div>
+
+        <!-- Selected Publications -->
+        <div style="margin-top:3.5rem;">
+            <div class="section-heading">Selected Publications</div>
+            <div class="pub-list">
+
+                <div class="pub-item">
+                    <div class="pub-title">Structure-Based Optimization of Quinazolines as Cruzain and TbrCATL Inhibitors</div>
+                    <div class="pub-authors">Barbosa da Silva, E. et al.</div>
+                    <div class="pub-journal">Journal of Medicinal Chemistry, 64, 13054–13071 (2021)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">Structure-based discovery of novel cruzain inhibitors with distinct trypanocidal activity profiles</div>
+                    <div class="pub-authors">Santos, V. C. et al.</div>
+                    <div class="pub-journal">European Journal of Medicinal Chemistry, 257, 115498 (2023)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">Screening the Pathogen Box to Discover and Characterize New Cruzain and TbrCatL Inhibitors</div>
+                    <div class="pub-authors">do Valle Moreira, T. et al.</div>
+                    <div class="pub-journal">Pathogens, 12, 251 (2023)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">Structure-Based Identification of Naphthoquinones and Derivatives as Novel Inhibitors of Main Protease M<sup>pro</sup> and Papain-like Protease PL<sup>pro</sup> of SARS-CoV-2</div>
+                    <div class="pub-authors">Santos, L. H. et al.</div>
+                    <div class="pub-journal">Journal of Chemical Information and Modeling, 62, 6553–6573 (2022)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">Structure-Based Discovery of Thiosemicarbazones As SARS-CoV-2 Main Protease Inhibitors</div>
+                    <div class="pub-authors">Maltarollo, V. G. et al.</div>
+                    <div class="pub-journal">Future Medicinal Chemistry, 15, 959–985 (2023)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">Ultra-Large Virtual Screening: Definition, Recent Advances, and Challenges in Drug Design</div>
+                    <div class="pub-authors">Corrêa Veríssimo, G., Salgado Ferreira, R. &amp; Gonçalves Maltarollo, V.</div>
+                    <div class="pub-journal">Molecular Informatics, 44 (2025)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">Characterization of an Allosteric Pocket in Zika Virus NS2B-NS3 Protease</div>
+                    <div class="pub-authors">Santos, N. P. et al.</div>
+                    <div class="pub-journal">Journal of Chemical Information and Modeling, 62, 945–957 (2022)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">The gene repertoire of the main cysteine protease of <em>Trypanosoma cruzi</em>, cruzipain, reveals four sub-types with distinct active sites</div>
+                    <div class="pub-authors">Santos, V. C. et al.</div>
+                    <div class="pub-journal">Scientific Reports, 11, 18231 (2021)</div>
+                </div>
+
+                <div class="pub-item">
+                    <div class="pub-title">Unraveling Common Patterns and Differences among Cruzipains through Molecular Dynamics Simulations and Structural Analyses</div>
+                    <div class="pub-authors">Santos, L. H. S. et al.</div>
+                    <div class="pub-journal">ACS Omega (2025)</div>
+                    <div class="pub-doi"><a href="https://doi.org/10.1021/acsomega.5c01876" target="_blank">doi: 10.1021/acsomega.5c01876</a></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     MEMBERS
+════════════════════════════════════════════════════ -->
+<section id="page-members" class="page">
+
+    <div class="page-banner">
+        <h1>Members</h1>
+        <p>The people behind the research</p>
+        <div class="banner-rule"></div>
+    </div>
+
+    <div class="container sec">
+        <div class="members-layout">
+
+            <!-- Current members (left) -->
+            <div>
+                <div class="section-heading">Current Members</div>
+
+                <!-- Principal Investigator -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="rafaela.jpg" alt="PI Name">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">Principal Investigator</div>
+                        <div class="member-name">Prof. Dr. Rafaela Salgado Ferreira</div>
+                        <div class="member-bio">
+                            She holds a B.Pharm. degree from the Federal University of Minas Gerais (UFMG) and a Ph.D. in Chemistry and Chemical Biology from the University of California, San Francisco (UCSF, USA). She completed postdoctoral training at the University of São Paulo (USP) in 2010 and served as a visiting researcher at the Centre de Biochimie Structurale (Montpellier, France) in 2018.
+
+                            Since 2011, she has been a faculty member of the Department of Biochemistry and Immunology at UFMG and serves as coordinator of the Molecular Modeling and Drug Design Laboratory, where she employs computational and experimental approaches for the discovery and development of novel ligands targeting therapeutically relevant proteins. Her research focuses on rational drug design, with expertise in virtual screening, molecular docking, comparative modeling, and structural biology.
+
+                            She served as Head of the Department of Biochemistry and Immunology at the Institute of Biological Sciences, UFMG (2024–2026), and currently serves as Treasurer of the Medicinal Chemistry Division of the Brazilian Chemical Society (SBQ) for the 2024–2026 term. She is an affiliated member of the Center for Discovery and Innovation in Parasitic Diseases (CDIPD) at the University of California San Diego (USA) and an Affiliated Member of the Brazilian Academy of Sciences (2025–2029).
+
+                            Her contributions have been recognized through several prestigious awards, including the L'Oréal–UNESCO–Brazilian Academy of Sciences (ABC) For Women in Science Award (Chemistry Category, 2017), the L'Oréal–UNESCO International Rising Talent Award (2018), the SBQ–ACS Brazilian Women in Chemistry Award (Emerging Leader Category, 2021), and the Early Career Researcher Award (2022), presented by the Medicinal Chemistry Division of the Brazilian Chemical Society and the Organizing Committee of the 10th Brazilian Symposium on Medicinal Chemistry (BrazMedChem).
+
+                            She is a Research Productivity Fellow of the Brazilian National Council for Scientific and Technological Development (CNPq), Level B, in the Biophysics Committee.
+                            </div>
+                        <div class="member-links">
+                            <a href="https://scholar.google.com.br/citations?user=UOTzmrcAAAAJ&hl=pt-BR" class="btn-link btn-scholar">Google Scholar</a>
+                            <a href="http://lattes.cnpq.br/7569627567234135" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Postdoc 1 -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="estela.jpg">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">Postdoctoral Researcher</div>
+                        <div class="member-name">Dr. Estela Lourenço</div>
+                        <div class="member-bio">
+                            She holds a B.Sc. in Pharmacy from the Federal University of Rio Grande do Norte (UFRN), an M.Sc. in Pharmaceutical Sciences from the Graduate Program in Pharmaceutical Sciences (PPGCF-UFRN), and a Ph.D. in Pharmaceutical Sciences from the Graduate Program in Pharmaceutical Sciences (PPGFAR-UFMS).
+
+She has participated in research projects conducted by the Computational Medicinal Chemistry Research Group (LabQFC-UFRN) and the Laboratory of Synthesis and Transformation of Organic Molecules (SINTMOL-UFMS). She is currently a postdoctoral researcher at the Molecular Modeling and Drug Design Laboratory (LMMPF) at the Federal University of Minas Gerais (UFMG).
+
+Her research activities focus on molecular modeling, ultra-large-scale virtual screening, rational drug design, machine learning, and the synthesis of molecules inspired by secondary metabolites.
+                        </div>
+                        <div class="member-links">
+                            <a href=" http://lattes.cnpq.br/1484474942484696" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                 <!-- Postdoc 2 -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="leo.jpg">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">Postdoctoral Researcher</div>
+                        <div class="member-name">Dr. José Leonardo Gómez Chávez</div>
+                        <div class="member-bio">
+                            His research is focused on the discovery of active compounds against the dihydrofolate reductase (DHFR) enzyme from Mycobacterium tuberculosis, a key biological target for the development of novel therapeutics against tuberculosis. The project combines established computational methodologies, including molecular docking, with state-of-the-art artificial intelligence (AI) approaches for the virtual screening of large chemical libraries. By integrating these strategies, the study aims to accelerate the drug discovery pipeline, improve the identification of promising lead compounds, and facilitate the rational design of molecules with enhanced binding affinity and enzymatic selectivity.
+                        </div>
+                        <div class="member-links">
+                            <a href="http://lattes.cnpq.br/1400573781050968" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PhD Student 1 -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="lucasvilar.jpg">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">PhD Student</div>
+                        <div class="member-name">Lucas Vilar</div>
+                        <div class="member-bio">
+                            He received a B.Sc. in Biological Sciences (Microbiology and Immunology) from the Federal University of Rio de Janeiro (UFRJ) in 2021 and an M.Sc. in Microbiology from the same institution in 2023. He is currently a Ph.D. candidate in Bioinformatics at the Federal University of Minas Gerais (UFMG), where his research focuses on structural bioinformatics and artificial intelligence applications in the life sciences.
+                        </div>
+                        <div class="member-links">
+                            <a href="https://scholar.google.com/citations?user=ODpDInQAAAAJ&hl=pt-BR" class="btn-link btn-scholar">Google Scholar</a>
+                            <a href="http://lattes.cnpq.br/6092608768277257" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PhD Student 2 -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="giovana.jpeg">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">PhD Student</div>
+                        <div class="member-name">Giovana Fiorini</div>
+                        <div class="member-bio">
+                            Ph.D. candidate in Biochemistry and Immunology, developing selective Plasmodium falciparum proteasome inhibitors through structure-based and machine learning approaches. The research focuses on developing machine learning–based metamodels to enable ultra-large-scale virtual screening and prioritize proteasome inhibitors of Plasmodium falciparum. It also involves the experimental validation of the most promising compounds through enzymatic inhibition and cellular assays.
+                        </div>
+                        <div class="member-links">
+                            <a href="https://scholar.google.com.br/citations?user=GZWH2zsAAAAJ&hl=pt-BR" class="btn-link btn-scholar">Google Scholar</a>
+                            <a href="http://lattes.cnpq.br/7489584819950654" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PhD Student 3 -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="camila.jpeg">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">PhD Student</div>
+                        <div class="member-name">Camila Yamada</div>
+                        <div class="member-bio">
+                            Rational design and dynamic characterization of esterases with potential for pyrethroid biodegradation through structural modeling and molecular dynamics simulations
+                        </div>
+                        <div class="member-links">
+                            <a href="https://scholar.google.com/citations?user=hTsN8VwAAAAJ&hl=en" class="btn-link btn-scholar">Google Scholar</a>
+                            <a href="http://lattes.cnpq.br/1360434436221313" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PhD Student 4 -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="joao.jpeg">
+                        
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">PhD Student</div>
+                        <div class="member-name">João Victor Marques da Silva</div>
+                        <div class="member-bio">
+                            I’m currently developing a research project at Biocomp focusing on study aboult interactions between insecticidal toxins from the spider Phoneutria nigriventer and sodium channels of the mosquito Aedes aegypti. the main vector transmitting diseases such as dengue, yellow fever, Zika, and chikungunya. 
+
+                            I’m using bioinformatics tools — including sequence alignment, molecular modeling, molecular docking, and molecular dynamics simulations — for identifying key structural features involved in toxin activity. Based on these insights, I’m designing peptide candidates with potential insecticidal properties.
+
+                            In addition to computational analyses, I’m conducting in vivo tests for evaluating the effectiveness of these molecules against A. aegypti, combining in silico and experimental approaches for contributing to the development of new vector control strategies.🦟🧪🕷️👨🏻‍💻
+                        </div>
+                        <div class="member-links">
+                            <a href="http://lattes.cnpq.br/5231317780245273" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Master's Student -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">Master's Student</div>
+                        <div class="member-name">Adonay da Silva Costa</div>
+                        <div class="member-bio">
+                            Discovery of novel urease inhibitors through virtual screening strategies integrating molecular docking and machine learning techniques.
+                        </div>
+                        <div class="member-links">
+                            <a href="https://lattes.cnpq.br/1197841528682642" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Master's Student 2 -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="vinicius.jpeg">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">Master's Student</div>
+                        <div class="member-name">Vinícius Delgado </div>
+                        <div class="member-bio">
+                            His project aims to identify novel inhibitors of the Schistosoma mansoni p38 kinase (Smp38). Schistosomiasis is a neglected tropical disease with a high prevalence in Brazil and across Africa. The emergence of resistance to praziquantel, the current standard treatment, together with the lack of effective therapeutic options against the early stages of infection, highlights the urgent need for new treatment strategies.
+
+                            Building upon ligands that have previously demonstrated promising in vitro activity against Smp38 (Smp38_3, Smp38_7, and Smp38_8), the study employs a comprehensive in silico drug discovery workflow. This approach integrates structural modeling of the enzyme using Modeller and AlphaFold2, molecular docking studies performed with DOCK6 and DockThor, and molecular dynamics simulations using GROMACS to identify the essential pharmacophoric features required for target binding.
+
+                            Based on these findings, a virtual library of synthetically accessible analogs will be designed and screened. Finally, the most promising computationally predicted compounds will be selected for organic synthesis and subsequent in vitro biological validation, with the ultimate goal of advancing the development of new therapeutic candidates against schistosomiasis.
+                        </div>
+                        <div class="member-links">
+                            <a href="http://lattes.cnpq.br/5805915813249060" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- undergrad -->
+                <div class="member-card">
+                    <div class="member-avatar">
+                        <img src="duda.jpg">
+                        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="member-info">
+                        <div class="member-role">Undergraduate Student</div>
+                        <div class="member-name">Maria Eduarda Silva Faria</div>
+                        <div class="member-bio">
+                            Application of computational methodologies for the discovery of selective inhibitors of the Trypanosoma cruzi proteasome.
+                        </div>
+                        <div class="member-links">
+                            <a href="https://lattes.cnpq.br/6136088082697413" class="btn-link btn-cv">CV Lattes</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /current members -->
+
+            <!-- Alumni (right sidebar) -->
+            <div>
+                <div class="alumni-panel">
+                    <div class="panel-title">Alumni</div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">Dr. [Full Name]</div>
+                        <div class="alumni-detail">PhD · 2024<br>Now at [Institution/Company]</div>
+                    </div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">Dr. [Full Name]</div>
+                        <div class="alumni-detail">Postdoc · 2023<br>Now at [Company]</div>
+                    </div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">[Full Name]</div>
+                        <div class="alumni-detail">MSc · 2023</div>
+                    </div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">Dr. [Full Name]</div>
+                        <div class="alumni-detail">PhD · 2022<br>Now at [University]</div>
+                    </div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">[Full Name]</div>
+                        <div class="alumni-detail">MSc · 2021</div>
+                    </div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">Dr. [Full Name]</div>
+                        <div class="alumni-detail">PhD · 2020<br>Now at [Institution]</div>
+                    </div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">[Full Name]</div>
+                        <div class="alumni-detail">MSc · 2019</div>
+                    </div>
+                    <div class="alumni-entry">
+                        <div class="alumni-name">Dr. [Full Name]</div>
+                        <div class="alumni-detail">PhD · 2018</div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /members-layout -->
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     GALLERY
+════════════════════════════════════════════════════ -->
+<section id="page-gallery" class="page">
+
+    <div class="page-banner">
+        <h1>Gallery</h1>
+        <p>Lab moments &amp; memories</p>
+        <div class="banner-rule"></div>
+    </div>
+
+    <div class="container sec">
+
+        <!-- ── Album: Annual Group Photos ── -->
+        <div class="gallery-album">
+            <div class="gallery-album-header">
+                <h2>Annual Group Photos</h2>
+                <span class="album-hint">— replace placeholders with &lt;img src="..." alt="..."&gt;</span>
+            </div>
+            <div class="gallery-masonry">
+
+                <!-- Real photo example (uncomment and fill src/alt/caption):
+                <figure class="gallery-item" data-caption="Group photo, 2025">
+                    <img src="photos/group-2025.jpg" alt="Lab group photo 2025">
+                    <figcaption>Annual group photo, 2025</figcaption>
+                </figure>
+                -->
+
+                <div class="gallery-ph" style="aspect-ratio:16/9">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Group photo 2024</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:16/9">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Group photo 2023</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Group photo 2022</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Group photo 2021</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── Album: Conferences & Events ── -->
+        <div class="gallery-album">
+            <div class="gallery-album-header">
+                <h2>Conferences &amp; Events</h2>
+                <span class="album-hint">— presentations, workshops, and scientific meetings</span>
+            </div>
+            <div class="gallery-masonry">
+
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Conference — [Name, Year]</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:3/4">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Poster presentation</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Workshop — [Name, Year]</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:16/9">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Award ceremony</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Talk — [Name, Year]</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ── Album: Lab Life & Celebrations ── -->
+        <div class="gallery-album">
+            <div class="gallery-album-header">
+                <h2>Lab Life &amp; Celebrations</h2>
+                <span class="album-hint">— everyday moments and milestones</span>
+            </div>
+            <div class="gallery-masonry">
+
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Thesis defense celebration</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Lab dinner / outing</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:3/4">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Birthday celebration</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+                <div class="gallery-ph" style="aspect-ratio:4/3">
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+                    <span>Lab meeting / journal club</span>
+                    <em style="font-size:.7rem;color:var(--border)">replace with &lt;img&gt;</em>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Lightbox modal -->
+    <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+        <button class="lb-close" id="lb-close" aria-label="Close">&#x2715;</button>
+        <img id="lb-img" src="" alt="" class="lb-img">
+        <p id="lb-caption" class="lb-caption"></p>
+    </div>
+
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     CONTACT
+════════════════════════════════════════════════════ -->
+<section id="page-contact" class="page">
+
+    <div class="page-banner">
+        <h1>Contact</h1>
+        <p>Reach our group</p>
+        <div class="banner-rule"></div>
+    </div>
+
+    <div class="container sec">
+        <div class="contact-grid">
+
+            <!-- PI Contact -->
+            <div class="contact-card">
+                <h3>Principal Investigator</h3>
+                <div class="contact-row">
+                    <div class="cicon">
+                        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                    </div>
+                    <div class="ctext">
+                        <strong>PI Name</strong>
+                        Prof. Dr. Rafaela Salgado Ferreira<br>
+                        Associate professor — Biochemistry and Immunology Department
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="cicon">
+                        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+                    </div>
+                    <div class="ctext">
+                        <strong>E-mail</strong>
+                        <a href="mailto:rafaelasalgadoferreira@gmail.com">rafaelasalgadoferreira@gmail.com</a>
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="cicon">
+                        <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>
+                    </div>
+                    <div class="ctext">
+                        <strong>Phone</strong>
+                        +55 (31) 3409-2615
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lab Address -->
+            <div class="contact-card">
+                <h3>Laboratory Address</h3>
+                <div class="contact-row">
+                    <div class="cicon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                    </div>
+                    <div class="ctext">
+                        <strong>How to find us</strong>
+                        Department of Biochemistry and Immunology<br>
+                        Federal University of Minas Gerais<br>
+                        Av. Antônio Carlos, 6627 - Pampulha<br>
+                        Belo Horizonte, MG — Postal code 31270-901
+                    </div>
+                </div>
+                <div class="contact-row">
+                    <div class="cicon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                    </div>
+                    <div class="ctext">
+                        <strong>Web</strong>
+                        <a href="https://www.pgbiq.icb.ufmg.br/">https://www.pgbiq.icb.ufmg.br/</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Open Positions -->
+            <div class="positions-card">
+                <h3>Open Positions</h3>
+                <div>
+                    <span class="badge badge-closed">Graduate students (MSc/PhD)</span>
+                    <span class="badge badge-closed">Postdoctoral researchers</span>
+                    <span class="badge badge-closed">Undergraduate research</span>
+                    <!--
+                        To close a position, swap class to badge-closed:
+                        <span class="badge badge-closed">No openings currently</span>
+                    -->
+                </div>
+                <p class="positions-body">
+                    To apply, please send a <strong>CV</strong>, a <strong>brief statement of interest</strong> (up to one page), and the contact information of two referees to the e-mail listed above.
+                    Undergraduate students interested in Undergraduate research are also welcome to reach out directly.
+                </p>
+            </div>
+
+        </div><!-- /contact-grid -->
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════ -->
+<footer id="site-footer">
+    <p>© 2025 Laboratório de Modelagem Molecular e Planejamento de Fármacos &nbsp;·&nbsp; <a href="#">[University Name]</a></p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════
+     NAVIGATION SCRIPT
+════════════════════════════════════════════════════ -->
+<script>
+    const pages    = document.querySelectorAll('.page');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    const logo     = document.getElementById('logo-home');
+
+    function navigate(pageId) {
+        pages.forEach(p => p.classList.remove('active'));
+        navLinks.forEach(a => a.classList.remove('active'));
+
+        const target = document.getElementById('page-' + pageId);
+        const link   = document.querySelector(`.nav-links a[data-page="${pageId}"]`);
+
+        if (target) target.classList.add('active');
+        if (link)   link.classList.add('active');
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    navLinks.forEach(a => {
+        a.addEventListener('click', e => {
+            e.preventDefault();
+            navigate(a.dataset.page);
+        });
+    });
+
+    logo.addEventListener('click', () => navigate('home'));
+
+    // Optional: support browser back/forward via hash
+    function handleHash() {
+        const hash = location.hash.replace('#', '') || 'home';
+        const valid = ['home','research','members','gallery','contact'];
+        navigate(valid.includes(hash) ? hash : 'home');
+    }
+    window.addEventListener('hashchange', handleHash);
+
+    // ── Gallery lightbox ──────────────────────────────────
+    document.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const img     = item.querySelector('img');
+            const caption = item.querySelector('figcaption');
+            if (!img) return;
+            document.getElementById('lb-img').src     = img.src;
+            document.getElementById('lb-img').alt     = img.alt;
+            document.getElementById('lb-caption').textContent = caption ? caption.textContent : '';
+            document.getElementById('lightbox').classList.add('open');
+        });
+    });
+    const lbEl    = document.getElementById('lightbox');
+    const lbClose = document.getElementById('lb-close');
+    if (lbClose) lbClose.addEventListener('click', () => lbEl.classList.remove('open'));
+    if (lbEl)    lbEl.addEventListener('click', e => { if (e.target === lbEl) lbEl.classList.remove('open'); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && lbEl) lbEl.classList.remove('open'); });
+</script>
+
+</body>
+</html>
